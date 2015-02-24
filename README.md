@@ -1,19 +1,19 @@
 # Generation-ii
 2015 Taylor/Rebecca (work in progress)
 
-/** Log of work done on project
-Logs:
--> Rebecca's Logs
--> Taylors Logs
-
-/** Code
-Code:
--> WIP #Work in Progress
--> Final #versions included 
-
-/** Papers Photos Videos
-Media:
--> Papers
--> Photos
+/** Log of work done on project<br>
+Logs:<br>
+-> Rebecca's Logs<br>
+-> Taylors Logs<br>
+<br>
+/** Code<br>
+Code:<br>
+-> WIP #Work in Progress<br>
+-> Final #versions included <br>
+<br>
+/** Papers Photos Videos<br>
+Media:<br>
+-> Papers<br>
+-> Photos<br>
 -> Misc.
 
