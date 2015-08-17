@@ -1,0 +1,168 @@
+package Turing;
+
+import lejos.hardware.Button;
+import lejos.hardware.Sound;
+import lejos.hardware.sensor.*;
+import lejos.hardware.lcd.*;
+import lejos.hardware.motor.*;
+import lejos.hardware.port.*;
+import lejos.robotics.Color;
+
+/**
+ * Turing Machine that should do Boolean And statements, built upon Mark
+ * Bennett's legacy code from generation 1
+ * 
+ * 
+ * @author Rebecca Roman
+ * 
+ * 
+ * 
+ */
+
+public class AndLogic {
+	static EV3ColorSensor sensor;
+	static int state = -1;
+	private static int begin = 0;
+
+	// final states, 3 true, 4 false
+	static final int FINAL_STATE_THREE = 20;
+	static final int FINAL_STATE_FOUR = 25;
+	// probably need to make time shorter
+	static final int INPUT_INTERVALS = -1820;
+	// in degrees
+	static final int PIE = 180;
+
+	static final String T = "True";
+	static final String F = "False";
+
+	// EV3 medium motors are NXT motors
+	// EV3 large motors are the ones that came with the kit
+	// Adjust accordingly
+	static boolean finished = false;
+
+	static final EV3MediumRegulatedMotor TAPE_MOTOR = new EV3MediumRegulatedMotor(
+			MotorPort.A);
+	static final EV3MediumRegulatedMotor ARM_MOTOR = new EV3MediumRegulatedMotor(
+			MotorPort.B);
+
+	public static void main(String[] args) {
+		sensorSetup();
+		tapePrep();
+
+
+		while (!finished) {
+			moveTapeForward();
+			LCD.clear();
+			state();
+			LCD.drawString("State: ", 0, 0);
+			LCD.drawInt(state, 6, 0);
+		}
+		// maybe not nessicary
+		if (state == FINAL_STATE_THREE) {
+			Sound.beepSequenceUp();
+			LCD.drawString(T, 5, 3);
+		}
+		if (state == FINAL_STATE_FOUR) {
+			Sound.beepSequenceUp();
+			LCD.drawString(F, 5, 3);
+		}
+		Button.waitForAnyPress();
+	}
+
+	// Setting up the color sensor and holding it in place
+	private static void sensorSetup() {
+		sensor = new EV3ColorSensor(SensorPort.S1);
+		LCD.drawString("Testing" + "\n" + "Press" + "\n" + "ENTER when" + "\n"
+				+ "finished.", 0, 0);
+		// while button is not pushed
+
+		while (Button.ENTER.isUp()) {
+			moveTapeForward();
+			if (sensor.getColorID() == 7) {
+				LCD.drawString("T", 5, 3);
+			} else {
+				LCD.drawString("F", 5, 3);
+			}
+
+		}
+		LCD.clear();
+	}
+
+	// Adjust tape to get proper readings
+	private static void tapePrep() {
+		LCD.drawString("Ajust the" + " tape " + "\n" + "now! Hold LEFT" + "\n"
+				+ "When done.", 0, 0);
+		// while button is not pushed
+		while (Button.LEFT.isUp()) {
+			LCD.clear();
+		}
+
+	}
+
+	private static void moveTapeForward() {
+		TAPE_MOTOR.rotate(INPUT_INTERVALS);
+	}
+
+	// state and table in one
+	public static void state() {
+		boolean tape = inputFromTape();
+		switch (state) {
+		case -1:
+			// begin if two readings are true back to back
+			if (begin == 1) {
+				if (tape) {
+					state++;
+					break;
+				} else {
+					begin--;
+					break;
+				}
+			}
+			if (tape) {
+				begin++;
+			}
+			break;
+		case 0:
+			// start state
+			if (tape) {
+				state = 1;
+			} else {
+				state = 2;
+			}
+			break;
+		case 1:
+			if (tape) {
+				state = 20;
+			} else {
+				state = 25;
+			}
+			break;
+		case 2:
+			state = 25;
+			break;
+		default:
+			if (state == FINAL_STATE_THREE) {
+				if (!tape){
+					ARM_MOTOR.rotate(PIE);
+			}} else{
+				if (tape) {
+					ARM_MOTOR.rotate(-PIE);
+				}}
+			finished = true;
+			break;
+		}
+	}
+
+	// tells if bit is down or up it might be near sighted or far sighted
+	// need to change how its set up to accurately represent the color
+	private static boolean inputFromTape() {
+		int sensValue = sensor.getColorID();
+
+		// bit faced downward is in the true position
+		if (sensValue == Color.BLACK) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
